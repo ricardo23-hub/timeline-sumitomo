@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sumitomo '87 · Agosto 2026 → Diciembre 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFFFFF;
+    --ink:#15181D;
+    --dim:#6A7280;
+    --dimmer:#A0A7B1;
+    --rule:#DDE1E6;
+    --rule-strong:#AEB6C0;
+    --rule-soft:#EBEEF1;
+
+    --steel:#1B6BFF;   /* sencillos */
+    --amber:#E5162B;   /* sesiones en vivo · Teokaye */
+    --violet:#9B1FE0;  /* EP */
+
+    --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --display:"Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+
+    --col:86px;        /* ancho de mes */
+    --base:126px;      /* altura del eje desde el fondo */
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--display);
+    -webkit-font-smoothing:antialiased;
+    padding:clamp(20px,4vw,52px) 0 64px;
+  }
+
+  .wrap{max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,32px)}
+
+  /* ── Encabezado ─────────────────────────────── */
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--dimmer);margin:0 0 14px;
+  }
+  h1{
+    font-size:clamp(26px,4.4vw,44px);line-height:1.06;font-weight:700;
+    letter-spacing:-.025em;margin:0 0 28px;
+  }
+
+  /* ── Franja de cadencia ─────────────────────── */
+  .cadence{margin:0 0 30px}
+  .cad-years{
+    display:grid;grid-template-columns:5fr 12fr;
+    font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.2em;
+    color:var(--ink);margin-bottom:10px;
+  }
+  .cad-years span{border-left:2px solid var(--ink);padding:1px 0 1px 8px}
+
+  .cad-grid{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;align-items:end}
+  .cad-cell{position:relative}
+  .cad-track{
+    border-bottom:1px solid var(--rule);
+    padding:8px 0 9px;
+  }
+  .cad-cell.grp .cad-track{
+    background:linear-gradient(180deg, rgba(229,22,43,.10), rgba(229,22,43,.02));
+    border-bottom-color:rgba(229,22,43,.45);
+  }
+  .cad-cell.yr::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:1px;background:var(--rule-strong);
+  }
+  .cad-marks{
+    height:30px;display:flex;gap:4px;justify-content:center;align-items:center;
+  }
+  .cad-marks i{width:9px;height:9px;border-radius:50%;background:currentColor;flex:none}
+  .cad-marks i.single{color:var(--steel)}
+  .cad-marks i.live{color:var(--amber)}
+  .cad-marks i.ep{color:var(--violet)}
+  .cad-marks i.big{
+    width:14px;height:14px;
+    box-shadow:0 0 0 3px var(--paper), 0 0 0 4.5px rgba(229,22,43,.5);
+  }
+  .cad-m{
+    font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-align:center;
+    color:var(--dimmer);padding-top:7px;
+  }
+  .cad-cell.has .cad-m{color:var(--dim);font-weight:600}
+  .cad-cell.cad-now .cad-m{color:var(--ink);font-weight:700}
+  .cad-cell.cad-now .cad-m::after{
+    content:"";display:block;width:4px;height:4px;border-radius:50%;
+    background:var(--ink);margin:5px auto 0;
+  }
+
+  @media (max-width:560px){
+    .cad-marks i{width:7px;height:7px;gap:3px}
+    .cad-marks i.big{width:11px;height:11px}
+    .cad-m{font-size:8px;letter-spacing:-.02em}
+  }
+
+  /* ── Leyenda ────────────────────────────────── */
+  .legend{
+    display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;
+    padding:14px 0 22px;border-top:1px solid var(--rule-soft);
+  }
+  .lg{display:flex;align-items:center;gap:9px;font-family:var(--mono);
+      font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+  .sw{width:11px;height:11px;border-radius:50%;flex:none}
+  .sw.single{background:var(--steel)}
+  .sw.live{background:var(--amber)}
+  .sw.ep{background:var(--violet)}
+
+  /* ── Contenedor del gráfico ─────────────────── */
+  .scroller{
+    position:relative;overflow-x:auto;overflow-y:hidden;
+    border:1px solid var(--rule-soft);border-radius:3px;
+    background:var(--paper);
+    scrollbar-color:var(--rule) transparent;
+  }
+  .scroller::-webkit-scrollbar{height:8px}
+  .scroller::-webkit-scrollbar-thumb{background:var(--rule);border-radius:99px}
+  .scroller::-webkit-scrollbar-track{background:transparent}
+
+  .chart{position:relative;height:492px;padding:0 26px}
+
+  /* banda que agrupa el bloque Teokaye */
+  .band{
+    position:absolute;top:14px;bottom:var(--base);
+    background:linear-gradient(180deg, rgba(229,22,43,.10), rgba(229,22,43,.03));
+    border-left:1px solid rgba(229,22,43,.28);
+    border-right:1px solid rgba(229,22,43,.28);
+    pointer-events:none;
+  }
+
+  /* eje */
+  .axis{
+    position:absolute;left:26px;right:26px;bottom:var(--base);height:1px;
+    background:linear-gradient(90deg,transparent,var(--rule) 4%,var(--rule) 96%,transparent);
+  }
+
+  .tick{position:absolute;bottom:var(--base);transform:translateX(-50%);text-align:center}
+  .tick:not(.has) b{font-size:9px;letter-spacing:.02em}
+  .tick i{display:block;width:1px;height:7px;background:var(--rule);margin:0 auto}
+  .tick.year-start i{height:13px;background:var(--dimmer)}
+  .tick b{
+    display:block;font-family:var(--mono);font-weight:500;font-size:10.5px;
+    letter-spacing:.14em;color:var(--dimmer);margin-top:8px;text-transform:uppercase;
+  }
+  .tick.has b{color:var(--dim);font-weight:600}
+
+  /* separadores de año */
+  .yearline{position:absolute;bottom:calc(var(--base) - 52px);top:8px;width:1px;background:var(--rule-strong)}
+  .yearlab{
+    position:absolute;top:8px;font-family:var(--mono);font-size:12.5px;font-weight:600;
+    letter-spacing:.2em;color:var(--ink);
+    border-left:2px solid var(--ink);padding:1px 0 1px 8px;
+  }
+
+  /* marca de "ahora" */
+  .now{position:absolute;bottom:var(--base);top:14px;width:1px;
+       background:repeating-linear-gradient(180deg,var(--rule) 0 4px,transparent 4px 9px)}
+  .nowlab{
+    position:absolute;font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+    color:var(--dimmer);transform:translateX(-50%);
+  }
+
+  /* ── Lollipops ──────────────────────────────── */
+  .pop{position:absolute;bottom:var(--base);transform:translateX(-50%);
+       display:flex;flex-direction:column-reverse;align-items:center}
+  .stem{width:2px;background:currentColor;opacity:.45;transform-origin:bottom center}
+  .dot{
+    width:14px;height:14px;border-radius:50%;background:currentColor;
+    margin-bottom:-1px;position:relative;flex:none;
+    box-shadow:0 0 0 4px var(--paper);
+  }
+  .lab{width:150px;text-align:center;margin-bottom:12px}
+  .lab .t{font-size:14.5px;font-weight:600;line-height:1.18;letter-spacing:-.01em;color:var(--ink)}
+  .lab .s{
+    display:block;font-family:var(--mono);font-size:10px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--dimmer);margin-top:5px;
+  }
+  .pop.live .lab .s{color:rgba(229,22,43,.85)}
+
+  .pop.single{color:var(--steel)}
+  .pop.live{color:var(--amber)}
+  .pop.ep{color:var(--violet)}
+
+  /* el punto destacado */
+  .pop.big .stem{width:3px;opacity:.8}
+  .pop.big .dot{width:22px;height:22px;box-shadow:0 0 0 5px var(--paper)}
+  .pop.big .dot::after{
+    content:"";position:absolute;inset:-11px;border-radius:50%;
+    border:1.5px solid rgba(229,22,43,.65);
+  }
+  .pop.big .dot::before{
+    content:"";position:absolute;inset:-22px;border-radius:50%;
+    background:rgba(229,22,43,.10);
+    border:1px solid rgba(229,22,43,.22);
+  }
+  .pop.big .lab .t{font-size:19px;font-weight:700;letter-spacing:-.02em}
+  .pop.big .lab{width:180px;margin-bottom:22px}
+
+  .pop:hover .dot{transform:scale(1.18)}
+  .dot{transition:transform .22s cubic-bezier(.2,.7,.3,1)}
+
+  /* corchete del grupo */
+  .bracket{position:absolute;bottom:calc(var(--base) - 44px);height:1px;background:rgba(229,22,43,.45)}
+  .bracket::before,.bracket::after{
+    content:"";position:absolute;top:-6px;width:1px;height:7px;background:rgba(229,22,43,.45);
+  }
+  .bracket::before{left:0}.bracket::after{right:0}
+  .bracket span{
+    position:absolute;left:50%;top:9px;transform:translateX(-50%);white-space:nowrap;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--amber);
+  }
+
+  .hint{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--dimmer);margin:12px 0 0;
+  }
+
+  /* ── Vista vertical (móvil) ─────────────────── */
+  .vlist{display:none;margin-top:6px}
+  .vgroup{position:relative;padding-left:34px}
+  .vgroup + .vgroup{margin-top:26px}
+  .vrail{position:absolute;left:6px;top:6px;bottom:0;width:1px;background:var(--rule)}
+  .vgroup.live .vrail{background:rgba(229,22,43,.45)}
+  .vmonth{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--dimmer);margin:0 0 12px;
+  }
+  .vitem{position:relative;margin-bottom:18px}
+  .vitem .vdot{
+    position:absolute;left:-33px;top:4px;width:12px;height:12px;border-radius:50%;
+    background:currentColor;box-shadow:0 0 0 4px var(--paper);
+  }
+  .vitem.single{color:var(--steel)}
+  .vitem.live{color:var(--amber)}
+  .vitem.ep{color:var(--violet)}
+  .vitem .vt{font-size:16px;font-weight:600;color:var(--ink);line-height:1.2}
+  .vitem .vs{
+    display:block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--dimmer);margin-top:5px;
+  }
+  .vitem.live .vs{color:rgba(229,22,43,.85)}
+  .vitem.big .vdot{
+    width:18px;height:18px;left:-36px;top:2px;
+    box-shadow:0 0 0 5px var(--paper),0 0 0 7px rgba(229,22,43,.35);
+  }
+  .vitem.big .vt{font-size:21px;font-weight:700;letter-spacing:-.02em}
+  .vtag{
+    display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--amber);
+    border:1px solid rgba(229,22,43,.35);border-radius:2px;padding:3px 7px;margin-bottom:14px;
+  }
+
+  @media (max-width:820px){
+    .scroller,.hint{display:none}
+    .vlist{display:block}
+    .legend{padding-bottom:26px}
+  }
+
+  /* entrada */
+  @media (prefers-reduced-motion:no-preference){
+    .pop .stem{animation:grow .6s cubic-bezier(.2,.75,.3,1) both}
+    .pop .dot{animation:pin .45s cubic-bezier(.2,.9,.3,1) both}
+    .pop .lab{animation:fade .5s ease both}
+    @keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+    @keyframes pin{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:scale(1)}}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  }
+
+  .pop:focus-visible{outline:2px solid var(--amber);outline-offset:4px}
+
+  @media print{
+    body{padding:0}
+    .scroller{overflow:visible;border:0}
+    .hint{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Calendario de lanzamientos</p>
+  <h1>Sumitomo '87 — Agosto 2026 → Diciembre 2027</h1>
+
+  <div class="cadence">
+    <div class="cad-years"><span>2026</span><span>2027</span></div>
+    <div class="cad-grid" id="cadgrid" aria-hidden="true"></div>
+  </div>
+
+  <div class="legend">
+    <span class="lg"><i class="sw single"></i>Sencillo</span>
+    <span class="lg"><i class="sw live"></i>Live at Teokaye</span>
+    <span class="lg"><i class="sw ep"></i>Primer lanzamiento EP</span>
+  </div>
+
+  <div class="scroller" id="scroller">
+    <div class="chart" id="chart"></div>
+  </div>
+  <p class="hint">Desliza en horizontal →</p>
+
+  <div class="vlist" id="vlist"></div>
+</div>
+
+<script>
+(function(){
+  const PAD = 26, W_EMPTY = 26, W_ONE = 112, W_TWO = 168, W_BIG = 158;
+  const START = {y:2026, m:8}, END = {y:2027, m:12};
+
+  const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  const MESES_LARGO = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  const data = [
+    {y:2026, m:11, t:"Van Damme",            s:"Sencillo",         k:"single"},
+    {y:2027, m:2,  t:"Superstition",         s:"Sencillo",         k:"single"},
+    {y:2027, m:4,  t:"Río + El Really Jam",  s:"Live at Teokaye",  k:"live"},
+    {y:2027, m:4,  t:"Día Solar",            s:"Live at Teokaye",  k:"live"},
+    {y:2027, m:5,  t:"Hacia Arriba",         s:"Live at Teokaye",  k:"live"},
+    {y:2027, m:5,  t:"Borealis + Poka-yoke", s:"Live at Teokaye",  k:"live"},
+    {y:2027, m:6,  t:"Sumitomo '87",         s:"Live at Teokaye",  k:"live", big:true},
+    {y:2027, m:11, t:"Single 1",             s:"EP",               k:"ep"}
+  ];
+
+  const idx = (y,m) => (y - START.y) * 12 + (m - START.m);
+  const total = idx(END.y, END.m) + 1;
+
+  /* agrupa por mes y calcula anchos variables:
+     los meses sin lanzamiento se comprimen, los ocupados se expanden */
+  const porMes = {};
+  data.forEach(d => { const i = idx(d.y, d.m); (porMes[i] = porMes[i] || []).push(d); });
+
+  const W = [], L = [];
+  let acum = PAD;
+  for(let i = 0; i < total; i++){
+    const it = porMes[i] || [];
+    let w = W_EMPTY;
+    if(it.length >= 2) w = W_TWO;
+    else if(it.length === 1) w = it[0].big ? W_BIG : W_ONE;
+    W.push(w); L.push(acum); acum += w;
+  }
+
+  const chart = document.getElementById("chart");
+  chart.style.width = (acum + PAD) + "px";
+  const x = i => L[i] + W[i] / 2;
+
+  /* banda del grupo Teokaye */
+  const gi = data.filter(d => d.k === "live").map(d => idx(d.y, d.m));
+  const gA = Math.min.apply(null, gi), gB = Math.max.apply(null, gi);
+  const band = document.createElement("div");
+  band.className = "band";
+  band.style.left  = L[gA] + "px";
+  band.style.width = (L[gB] + W[gB] - L[gA]) + "px";
+  chart.appendChild(band);
+
+  /* eje */
+  const axis = document.createElement("div");
+  axis.className = "axis";
+  chart.appendChild(axis);
+
+  /* separadores de año */
+  for(let i = 0; i < total; i++){
+    const m = ((START.m - 1 + i) % 12) + 1;
+    if(m === 1 && i > 0){
+      const yl = document.createElement("div");
+      yl.className = "yearline";
+      yl.style.left = L[i] + "px";
+      chart.appendChild(yl);
+    }
+  }
+  [[2026, 0], [2027, idx(2027,1)]].forEach(function(p){
+    const el = document.createElement("div");
+    el.className = "yearlab";
+    el.textContent = p[0];
+    el.style.left = (L[p[1]] + 4) + "px";
+    chart.appendChild(el);
+  });
+
+  /* marca de ahora */
+  const now = document.createElement("div");
+  now.className = "now";
+  now.style.left = x(0) + "px";
+  chart.appendChild(now);
+  const nl = document.createElement("div");
+  nl.className = "nowlab";
+  nl.textContent = "AHORA";
+  nl.style.left = x(0) + "px";
+  nl.style.top = "0px";
+  chart.appendChild(nl);
+
+  /* ticks de mes */
+  const ocupados = new Set(data.map(d => idx(d.y, d.m)));
+  for(let i = 0; i < total; i++){
+    const m = ((START.m - 1 + i) % 12) + 1;
+    const t = document.createElement("div");
+    t.className = "tick" + (m === 1 ? " year-start" : "") + (ocupados.has(i) ? " has" : "");
+    t.style.left = x(i) + "px";
+    t.style.width = W[i] + "px";
+    t.innerHTML = "<i></i><b>" + MESES[m - 1] + "</b>";
+    chart.appendChild(t);
+  }
+
+  /* lollipops */
+  const H_ALTA = 210, H_BAJA = 118, H_BIG = 268;
+
+  data.forEach(function(d, n){
+    const i = idx(d.y, d.m);
+    const grupo = porMes[i];
+    const pos = grupo.indexOf(d);
+    const offset = grupo.length === 1 ? 0 : (pos === 0 ? -W[i] * 0.26 : W[i] * 0.26);
+    const h = d.big ? H_BIG : (n % 2 === 0 ? H_ALTA : H_BAJA);
+
+    const pop = document.createElement("div");
+    pop.className = "pop " + d.k + (d.big ? " big" : "");
+    pop.style.left = (x(i) + offset) + "px";
+    pop.setAttribute("tabindex", "0");
+    pop.setAttribute("aria-label", d.t + " — " + d.s + " — " + MESES_LARGO[d.m - 1] + " " + d.y);
+
+    pop.innerHTML =
+      '<div class="stem" style="height:' + h + 'px"></div>' +
+      '<div class="dot"></div>' +
+      '<div class="lab"><span class="t">' + d.t + '</span><span class="s">' + d.s + '</span></div>';
+
+    pop.querySelector(".stem").style.animationDelay = (n * 90) + "ms";
+    pop.querySelector(".dot").style.animationDelay  = (n * 90 + 320) + "ms";
+    pop.querySelector(".lab").style.animationDelay  = (n * 90 + 420) + "ms";
+
+    chart.appendChild(pop);
+  });
+
+  /* corchete del grupo */
+  const br = document.createElement("div");
+  br.className = "bracket";
+  br.style.left  = (L[gA] + 8) + "px";
+  br.style.width = (L[gB] + W[gB] - L[gA] - 16) + "px";
+  br.innerHTML = "<span>Live at Teokaye · 5 sesiones</span>";
+  chart.appendChild(br);
+
+  /* el aviso de scroll solo aparece si de verdad hay desbordamiento */
+  requestAnimationFrame(function(){
+    const sc = document.getElementById("scroller");
+    const hint = document.querySelector(".hint");
+    if(sc.scrollWidth <= sc.clientWidth + 2) hint.style.display = "none";
+  });
+
+  /* ── franja de cadencia ── */
+  const cad = document.getElementById("cadgrid");
+  for(let i = 0; i < total; i++){
+    const m = ((START.m - 1 + i) % 12) + 1;
+    const items = porMes[i] || [];
+
+    const cell = document.createElement("div");
+    cell.className = "cad-cell"
+      + (i >= gA && i <= gB ? " grp" : "")
+      + (m === 1 && i > 0 ? " yr" : "")
+      + (items.length ? " has" : "")
+      + (i === 0 ? " cad-now" : "");
+
+    let marks = "";
+    items.forEach(function(d){
+      marks += '<i class="' + d.k + (d.big ? " big" : "") + '"></i>';
+    });
+
+    cell.innerHTML = '<div class="cad-track"><div class="cad-marks">' + marks + '</div></div>'
+                   + '<div class="cad-m">' + MESES[m - 1].charAt(0).toUpperCase() + MESES[m - 1].slice(1) + '</div>';
+    cad.appendChild(cell);
+  }
+
+  /* ── vista vertical ── */
+  const vlist = document.getElementById("vlist");
+  const orden = Array.from(new Set(data.map(d => idx(d.y, d.m)))).sort((a, b) => a - b);
+  let tagPuesta = false;
+
+  orden.forEach(function(i){
+    const items = porMes[i];
+    const y = START.y + Math.floor((START.m - 1 + i) / 12);
+    const m = ((START.m - 1 + i) % 12) + 1;
+    const esLive = items.every(it => it.k === "live");
+
+    const g = document.createElement("div");
+    g.className = "vgroup" + (esLive ? " live" : "");
+    let html = '<div class="vrail"></div><p class="vmonth">' + MESES_LARGO[m - 1] + " " + y + "</p>";
+    if(esLive && !tagPuesta){ html += '<span class="vtag">Live at Teokaye</span>'; tagPuesta = true; }
+
+    items.forEach(function(d){
+      html += '<div class="vitem ' + d.k + (d.big ? " big" : "") + '">' +
+                '<span class="vdot"></span>' +
+                '<span class="vt">' + d.t + '</span>' +
+                '<span class="vs">' + d.s + '</span>' +
+              '</div>';
+    });
+    g.innerHTML = html;
+    vlist.appendChild(g);
+  });
+})();
+</script>
+</body>
+</html>
